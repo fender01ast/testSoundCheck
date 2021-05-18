@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Audio</title>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+    <input type="text" placeholder="Input uid to call" id="uid"/>
+    <button id="call">Call</button>
+
+</body>
+</html>
+<script>
+    let peer, uid;
+
+    window.addEventListener('load', () => {
+        peer = new Peer();
+
+        peer.on('open', peerUid => uid = peerUid);
+
+        document.querySelector('#call').addEventListener('click', () => {
+            let peerUid = document.querySelector('#uid').value,
+                call;
+
+            if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({video: false, audio: true})
+                    .then(mediaStream => {
+                        call = peer.call(peerUid, mediaStream);
+                    })
+                    .catch(error => {
+                        console.log('Error occurred!!! ' + error);
+                    });
+            }
+        });
+
+        peer.on('call', call => {
+            //Accept call
+            call.answer();
+
+            //Stream
+            call.on('stream', stream => {
+                let audio = new Audio();
+                    audio.srcObject = stream;
+
+                audio.play();
+            });
+        });
+    });
+</script>
